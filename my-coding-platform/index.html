@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>小学生编程乐园</title>
+<script src="https://res.wx.qq.com/open/js/cloudbase/1.1.0/cloud.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.9.1/fonts/remixicon.css">
+<link rel="stylesheet" href="css/style.css">
+<style>
+.home-row {
+  display: flex;
+  gap: 20px;
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+.home-left {
+  flex: 0 0 500px;
+}
+.home-right {
+  flex: 1;
+}
+</style>
+</head>
+<body>
+
+<div id="sidebarOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.3);z-index:9998;" onclick="hideSidebar()"></div>
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-menu">
+    <div class="menu-item active" onclick="navigateTo('home')">
+      <i class="ri-home-fill"></i> 首页
+    </div>
+    <div class="menu-item" onclick="navigateTo('practice')">
+      <i class="ri-code-s-slash-line"></i> 我的题目
+    </div>
+    <div class="menu-item" onclick="navigateTo('class')">
+      <i class="ri-team-fill"></i> 我的班级
+    </div>
+  </div>
+</div>
+
+<div class="top-bar">
+  <button class="toggle-sidebar-btn" onclick="toggleSidebar()">
+    <i class="ri-menu-line"></i> 菜单
+  </button>
+  <h1>🎉 小学生编程乐园</h1>
+  <button id="logoutButton" class="logout-btn" style="display:none;" onclick="doLogout()">
+    <i class="ri-logout-box-r-line"></i> 退出登录
+  </button>
+</div>
+
+<div class="main-content" id="mainContent">
+
+  <div id="page-home" class="page-content active">
+    <div class="home-row">
+      <div class="home-left">
+        <h2>🏠 班级学习排名</h2>
+        <div style="margin:20px 0;">
+          <label>选择班级：</label>
+          <select id="homeClassSelector" style="padding:8px 12px;border-radius:4px;border:1px solid #ccc;" onchange="loadClassRanking()">
+            <option value="">-- 请选择班级 --</option>
+          </select>
+        </div>
+        <div style="border:1px solid #e0e0e0;border-radius:8px;padding:20px;background:#fafafa;min-height:200px;">
+          <h4 style="margin-top:0;">📊 班级做题完成率排名</h4>
+          <div id="rankingList" style="margin-top:15px;">
+            <p class="empty-tip">请先选择班级</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="home-right">
+        <div style="margin-top:20px; border:1px solid #e0e0e0; border-radius:8px; padding:20px; background:#fafafa; min-height:200px;">
+          <div style="display:flex; justify-content:space-between;">
+            <h3 style="margin:0 0 10px 0;">📢 班级公告</h3>
+            <span id="noticeBadge" style="color:red;font-weight:bold;display:none;">🔴 有新公告</span>
+          </div>
+          <div id="noticeBox" style="min-height:80px; margin:10px 0;"></div>
+          <div style="text-align:right;">
+            <button onclick="prevNotice()" style="padding:4px 8px;">上一页</button>
+            <span id="noticePage">1/1</span>
+            <button onclick="nextNotice()" style="padding:4px 8px;">下一页</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="page-practice" class="page-content" style="display:none;">
+    <div id="progressContainer">
+      <h3>📈 学习进度</h3>
+      <div class="progress-bar">
+        <div id="progressFill" class="progress-fill"></div>
+      </div>
+      <div class="stars-container">
+        <span id="star1" class="star">★</span>
+        <span id="star2" class="star">★</span>
+        <span id="star3" class="star">★</span>
+      </div>
+      <div class="problem-status">1. 输出Hello World <span id="status1"></span></div>
+      <div class="problem-status">2. 计算1+2 <span id="status2"></span></div>
+      <div class="problem-status">3. 循环输出5个星号 <span id="status3"></span></div>
+    </div>
+
+    <select id="problemSelector">
+      <option value="">📝 请选择编程题目</option>
+      <option value="1">1. 输出Hello World</option>
+      <option value="2">2. 计算1+2</option>
+      <option value="3">3. 循环输出5个星号</option>
+    </select>
+
+    <textarea id="code">#include <iostream>
+using namespace std;
+int main() {
+cout << "Hello World!" << endl;
+return 0;
+}</textarea>
+    <br>
+
+    <button onclick="runCode()"><i class="ri-play-large-fill"></i>运行代码</button>
+    <button onclick="testCloudConn()"><i class="ri-links-line"></i>测试云连接</button>
+
+    <div id="cloudStatus" class="default">连接状态：未初始化</div>
+    <div id="output">运行结果会显示在这里...</div>
+
+    <div id="loadingAnimation"><div class="spinner"></div></div>
+    <div id="celebrationAnimation"></div>
+  </div>
+
+  <div id="page-class" class="page-content" style="display:none;">
+    <div style="padding:20px; max-width:800px; margin:0 auto;">
+      <h2>👨‍👩‍👧‍👦 我的班级</h2>
+      <div style="margin:20px 0;">
+        <input type="text" id="bindClassInput" placeholder="输入教师提供的班级码" style="padding:8px; width:220px;">
+        <button onclick="bindMyClass()" style="padding:8px 16px; background:#1976d2; color:white; border:none; border-radius:4px;">加入班级</button>
+      </div>
+
+      <hr style="margin:30px 0;">
+      <div id="myClassInfo" style="margin-bottom:30px;">
+        <p class="empty-tip">请先加入班级</p>
+      </div>
+
+      <div id="classMembersBox" style="display:none; margin-top:15px;">
+        <h3>班级成员列表</h3>
+        <div id="classMembersList" style="margin-top:10px;"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 登录注册弹窗 -->
+<div id="authModal" style="display:flex;">
+  <div class="modal-content">
+    <div id="loginTab">
+      <h3>👋 登录</h3>
+      <input type="text" id="loginAccount" placeholder="账号 / 姓名">
+      <input type="password" id="loginPwd" placeholder="密码">
+      <button onclick="doLogin()" style="background:#1976d2;">登录</button>
+      <p style="text-align:center;">没有账号？<a href="javascript:switchTab('register')">注册</a></p>
+      <a href="index.html" style="float: right; margin-left: auto;">
+        教师<i class="ri-arrow-right-circle-line"></i>
+        </a>
+    </div>
+    <div id="registerTab" style="display:none;">
+      <h3>📝 注册</h3>
+      <input type="text" id="regName" placeholder="请输入你的姓名" required>
+      <input type="password" id="regPwd" placeholder="请设置密码" required>
+      <input type="text" id="regClassCode" placeholder="班级码（选填）">
+      <button onclick="doRegister()" style="background:#43a047;">注册</button>
+      <p style="text-align:center;">已有账号？<a href="javascript:switchTab('login')">登录</a></p>
+       
+    </div>
+  </div>
+</div>
+
+<script src="js/code-runner.js"></script>
+<script src="js/code-simulator.js"></script>
+<script src="js/cloud-init.js"></script>
+<script src="js/main.js"></script>
+
+<script>
+// 侧边栏
+function toggleSidebar(){
+  const s=document.getElementById('sidebar');
+  const m=document.getElementById('mainContent');
+  const o=document.getElementById('sidebarOverlay');
+  s.classList.toggle('open');
+  m.classList.toggle('shift');
+  o.style.display=s.classList.contains('open')?'block':'none';
+}
+function hideSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('mainContent').classList.remove('shift');
+  document.getElementById('sidebarOverlay').style.display='none';
+}
+
+// 页面切换
+function navigateTo(page){
+  document.querySelectorAll('.page-content').forEach(e=>e.style.display='none');
+  document.getElementById('page-'+page).style.display='block';
+  document.querySelectorAll('.menu-item').forEach(i=>i.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  if(page==='home')loadMyClassOptions();
+  if(page==='class')loadMyClass();
+}
+
+// 登录注册标签切换
+function switchTab(t){
+  document.getElementById('loginTab').style.display=t=='login'?'block':'none';
+  document.getElementById('registerTab').style.display=t=='register'?'block':'none';
+}
+
+// 登录：支持账号 / 姓名登录
+function doLogin(){
+  const loginText = document.getElementById('loginAccount').value.trim();
+  const pwd = document.getElementById('loginPwd').value.trim();
+
+  if(!loginText || !pwd){
+    alert('请输入账号/姓名和密码');
+    return;
+  }
+
+  const users = JSON.parse(localStorage.getItem('users') || '{}');
+  let targetUser = null;
+  let targetAccount = null;
+
+  // 先按账号匹配
+  if(users[loginText]){
+    targetUser = users[loginText];
+    targetAccount = loginText;
+  }else{
+    // 再按姓名匹配
+    for(let account in users){
+      if(users[account].name === loginText){
+        targetUser = users[account];
+        targetAccount = account;
+        break;
+      }
+    }
+  }
+
+  if(!targetUser || targetUser.password !== pwd){
+    alert('账号/姓名或密码错误');
+    return;
+  }
+
+  localStorage.setItem('currentUser',JSON.stringify({
+    account: targetAccount,
+    name: targetUser.name,
+    className: targetUser.className || '',
+    classCode: targetUser.classCode || ''
+  }));
+
+  loadUserInfoByKey('student_'+targetAccount);
+  updateProgressDisplay();
+
+  document.getElementById('authModal').style.display='none';
+  document.getElementById('logoutButton').style.display='flex';
+  alert(`🎉 登录成功！\n你的账号：${targetAccount}`);
+}
+
+// 注册：只填姓名、密码、班级码(选填)，自动生成8位账号
+function doRegister(){
+  const name = document.getElementById('regName').value.trim();
+  const pwd = document.getElementById('regPwd').value.trim();
+  const classCode = document.getElementById('regClassCode').value.trim();
+
+  if(!name || !pwd){
+    alert('请填写姓名和密码！');
+    return;
+  }
+
+  const users = JSON.parse(localStorage.getItem('users') || '{}');
+
+  // 生成唯一8位数字账号
+  let account;
+  do {
+    account = Math.floor(10000000 + Math.random() * 90000000).toString();
+  } while(users[account]);
+
+  // 保存学生信息
+  users[account] = {
+    password: pwd,
+    name: name,
+    classCode: classCode
+  };
+  localStorage.setItem('users', JSON.stringify(users));
+
+  // 登录当前用户
+  localStorage.setItem('currentUser', JSON.stringify({
+    account: account,
+    name: name,
+    classCode: classCode
+  }));
+
+  // 初始化做题进度
+  localStorage.setItem('student_'+account, JSON.stringify({"1":false,"2":false,"3":false}));
+  loadUserInfoByKey('student_'+account);
+  updateProgressDisplay();
+
+  document.getElementById('authModal').style.display='none';
+  document.getElementById('logoutButton').style.display='flex';
+
+  // 有班级码自动加入班级
+  if(classCode){
+    bindStudentClassCode(classCode);
+  }
+
+  alert(`🎊 注册成功！
+自动生成8位账号：${account}
+请保存好账号，下次可账号/姓名登录`);
+}
+
+// 手动加入班级
+function bindMyClass(){
+  const code=document.getElementById('bindClassInput').value.trim();
+  if(!code){alert('请输入班级码');return;}
+  bindStudentClassCode(code).then(()=>loadMyClass());
+}
+
+// 退出登录
+function doLogout(){
+  if(!confirm('确定退出？'))return;
+  localStorage.removeItem('currentUser');
+  document.getElementById('logoutButton').style.display='none';
+  document.getElementById('authModal').style.display='flex';
+  switchTab('login');
+  alert('已退出');
+}
+
+// 更新进度界面
+window.updateProgressDisplay=function(){
+  const p=JSON.parse(localStorage.getItem('problemProgress')||'{"1":false,"2":false,"3":false}');
+  const ok=Object.values(p).filter(Boolean).length;
+  document.getElementById('progressFill').style.width=(ok/3*100)+'%';
+  for(let i=1;i<=3;i++){
+    document.getElementById('star'+i).classList.toggle('completed',p[i]);
+    document.getElementById('status'+i).innerHTML=p[i]?'<span class="completed-tag">已完成</span>':'';
+  }
+};
+
+// 云连接测试
+window.testCloudConn=function(){
+  const s=document.getElementById('cloudStatus');
+  s.innerHTML='测试中...';
+  setTimeout(()=>{
+    s.className='success';
+    s.innerHTML='✅ 云连接正常';
+  },600);
+};
+
+// 页面初始化
+window.onload=function(){
+  const u=JSON.parse(localStorage.getItem('currentUser')||'{}');
+  if(u.account){
+    loadUserInfoByKey('student_'+u.account);
+    updateProgressDisplay();
+    document.getElementById('authModal').style.display='none';
+    document.getElementById('logoutButton').style.display='flex';
+  }
+};
+</script>
+
+</body>
+</html>
