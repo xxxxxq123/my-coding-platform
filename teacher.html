@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>编程乐园 - 教师管理端</title>
+<script src="https://res.wx.qq.com/open/js/cloudbase/1.1.0/cloud.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.9.1/fonts/remixicon.css">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="sidebarOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); z-index: 9998;" onclick="hideSidebar()"></div>
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-menu">
+    <div class="menu-item active" onclick="navigateTo('home')">
+      <i class="ri-home-fill"></i> 首页
+    </div>
+    <div class="menu-item" onclick="navigateTo('class')">
+      <i class="ri-school-fill"></i> 班级管理
+    </div>
+    <div class="menu-item" onclick="navigateTo('student')">
+      <i class="ri-user-3-fill"></i> 学生管理
+    </div>
+    <div class="menu-item" onclick="navigateTo('notice')">
+      <i class="ri-notification-fill"></i> 公告管理
+    </div>
+  </div>
+</div>
+
+<div class="top-bar">
+  <button class="toggle-sidebar-btn" onclick="toggleSidebar()">
+    <i class="ri-menu-line"></i> 菜单
+  </button>
+  <h1>👨‍🏫 编程乐园 - 教师管理系统</h1>
+</div>
+
+<div class="main-content" id="mainContent">
+  <div id="page-home" class="page-content active">
+    <h2>欢迎使用编程乐园教师管理系统</h2>
+    <p style="color: #666; margin-top: 20px;">请从左侧菜单选择功能模块</p>
+  </div>
+
+  <div id="page-class" class="page-content" style="display: none;">
+    <div class="teacher-section">
+      <h2>🏫 班级管理</h2>
+      <div class="class-controls">
+        <input type="text" id="classNameInput" placeholder="请输入班级名称（如：三年级1班）">
+        <button onclick="createClass()" style="background:#43a047;"><i class="ri-add-box-fill"></i> 创建班级</button>
+        <button onclick="clearTestData()" style="background:#e53935;"><i class="ri-delete-bin-fill"></i> 清除测试数据</button>
+      </div>
+      <div id="classList" class="class-list">
+        <p class="empty-tip">暂无创建的班级，点击上方按钮创建第一个班级吧！</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="page-student" class="page-content" style="display: none;">
+    <div class="teacher-section">
+      <h2>📊 学生进度监控</h2>
+      <select id="classSelector" onchange="loadStudentsByClass()">
+        <option value="">请选择要查看的班级</option>
+      </select>
+      <div id="studentList" class="student-list">
+        <p class="empty-tip">请先选择班级查看学生数据</p>
+      </div>
+
+      <div id="codeViewModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; justify-content: center; align-items: center;">
+        <div class="modal-content" style="width: 80%; max-width: 800px; max-height: 80vh; overflow: auto;">
+          <h3 id="codeViewTitle">学生代码详情</h3>
+          <button onclick="closeCodeModal()" style="position: absolute; top: 10px; right: 10px; background: #e53935; color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer;">关闭</button>
+          <pre id="codeViewContent" style="background: #f5f5f5; padding: 15px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word;"></pre>
+          <div style="margin-top: 10px; text-align: right;">
+            <button onclick="exportStudentCode()" style="background: #1976d2; color: white; border: none; border-radius: 4px; padding: 8px 15px; cursor: pointer;">导出代码</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 20px;">
+        <button onclick="exportClassData()" style="background: #1976d2; color: white; border: none; border-radius: 4px; padding: 10px 20px; cursor: pointer;"><i class="ri-download-fill"></i> 导出班级数据为Excel</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="page-notice" class="page-content" style="display: none;">
+    <div class="teacher-section">
+      <h2>📢 班级公告管理</h2>
+      <div style="margin:20px 0;">
+        <select id="noticeClassSelector" style="padding:8px 12px; border-radius:4px; border:1px solid #ccc;">
+          <option value="">请选择发布公告的班级</option>
+        </select>
+      </div>
+      <div style="margin:15px 0;">
+        <textarea id="noticeContent" placeholder="请输入公告内容..." style="width:100%; height:100px; padding:10px; border-radius:4px; border:1px solid #ccc; font-size:14px;"></textarea>
+      </div>
+      <button onclick="publishNotice()" style="background:#1976d2; padding:8px 16px; border:none; border-radius:4px; color:white; cursor:pointer;">
+        <i class="ri-send-plane-fill"></i> 发布公告
+      </button>
+      <hr style="margin:25px 0;">
+      <h3>📄 历史公告</h3>
+      <div id="noticeHistoryList" style="margin-top:15px;">
+        <p class="empty-tip">请选择班级查看历史公告</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 登录弹窗 -->
+<div id="authModal" style="display: flex;">
+  <div class="modal-content">
+    <div id="loginTab">
+      <h3>👋 教师登录</h3>
+      <input type="text" id="loginAccount" placeholder="账号 / 姓名">
+      <input type="password" id="loginPwd" placeholder="密码">
+      <button onclick="doTeacherLogin()" style="background:#1976d2;">登录</button>
+      <p style="text-align:center; margin-top:10px;">
+        还没有账号？<a href="javascript:switchTab('register')" style="color:#1976d2;">立即注册</a>
+      </p>
+      <a href="index.html" style="float: right; margin-left: auto;">
+        学生<i class="ri-arrow-right-circle-line"></i>
+      </a>
+    </div>
+
+    <div id="registerTab" style="display:none;">
+      <h3>📝 教师注册</h3>
+      <input type="text" id="regName" placeholder="请输入姓名" required>
+      <input type="password" id="regPwd" placeholder="请设置密码" required>
+      <button onclick="doTeacherRegister()" style="background:#43a047;">注册</button>
+      <p style="text-align:center; margin-top:10px;">
+        已有账号？<a href="javascript:switchTab('login')" style="color:#43a047;">去登录</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<button id="logoutButton" class="logout-btn" style="display: none;" onclick="logoutTeacher()">
+  <i class="ri-logout-box-r-line"></i> 退出登录
+</button>
+
+<div id="cloudStatus" class="default" style="margin-top: 20px;">连接状态：未初始化</div>
+<div id="loadingAnimation"><div class="spinner"></div></div>
+
+<script src="js/cloud-init.js"></script>
+<script src="js/code-simulator.js"></script>
+<script src="js/code-runner.js"></script>
+<script src="js/teacher.js"></script>
+<script src="js/main.js"></script>
+
+<script>
+let currentTeacher = {};
+let currentClassId = "";
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const mainContent = document.getElementById('mainContent');
+  const overlay = document.getElementById('sidebarOverlay');
+  sidebar.classList.toggle('open');
+  mainContent.classList.toggle('shift');
+  overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
+}
+function hideSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('mainContent').classList.remove('shift');
+  document.getElementById('sidebarOverlay').style.display = 'none';
+}
+
+function navigateTo(page) {
+  document.querySelectorAll('.page-content').forEach(el => el.style.display = 'none');
+  document.getElementById(`page-${page}`).style.display = 'block';
+  document.querySelectorAll('.menu-item').forEach(item => item.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  if (page === 'class') loadTeacherClasses();
+  if (page === 'student') loadTeacherClasses();
+  if (page === 'notice') loadNoticeClassList();
+}
+
+function switchTab(tab) {
+  document.getElementById('loginTab').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('registerTab').style.display = tab === 'register' ? 'block' : 'none';
+}
+
+// ==============================================
+// 🔥 教师登录：支持 8位账号 / 姓名 登录
+// ==============================================
+function doTeacherLogin() {
+  const loginText = document.getElementById('loginAccount').value.trim();
+  const pwd = document.getElementById('loginPwd').value.trim();
+  if (!loginText || !pwd) { alert('请输入账号/姓名和密码'); return; }
+
+  const teachers = JSON.parse(localStorage.getItem('teachers') || '{}');
+  let target = null;
+  let account = null;
+
+  if (teachers[loginText]) {
+    target = teachers[loginText];
+    account = loginText;
+  } else {
+    for (let a in teachers) {
+      if (teachers[a].name === loginText) {
+        target = teachers[a];
+        account = a;
+        break;
+      }
+    }
+  }
+
+  if (!target || target.password !== pwd) {
+    alert('账号/姓名 或 密码错误');
+    return;
+  }
+
+  currentTeacher = { account, name: target.name };
+  localStorage.setItem('currentTeacher', JSON.stringify(currentTeacher));
+  document.getElementById('authModal').style.display = 'none';
+  document.getElementById('logoutButton').style.display = 'flex';
+  loadTeacherClasses();
+  alert(`🎉 登录成功！\n你的教师账号：${account}`);
+}
+
+// ==============================================
+// 🔥 教师注册：姓名+密码 → 自动生成8位账号
+// ==============================================
+function doTeacherRegister() {
+  const name = document.getElementById('regName').value.trim();
+  const pwd = document.getElementById('regPwd').value.trim();
+  if (!name || !pwd) { alert('姓名和密码不能为空！'); return; }
+
+  const teachers = JSON.parse(localStorage.getItem('teachers') || '{}');
+  
+  let account;
+  do {
+    account = Math.floor(10000000 + Math.random() * 90000000).toString();
+  } while (teachers[account]);
+
+  teachers[account] = { password: pwd, name };
+  localStorage.setItem('teachers', JSON.stringify(teachers));
+
+  currentTeacher = { account, name };
+  localStorage.setItem('currentTeacher', JSON.stringify(currentTeacher));
+  document.getElementById('authModal').style.display = 'none';
+  document.getElementById('logoutButton').style.display = 'flex';
+
+  alert(`🎊 注册成功！
+你的8位教师账号：${account}
+请牢记，用于登录`);
+}
+
+function logoutTeacher() {
+  if (!confirm('确定退出？')) return;
+  localStorage.removeItem('currentTeacher');
+  document.getElementById('logoutButton').style.display = 'none';
+  document.getElementById('authModal').style.display = 'flex';
+  switchTab('login');
+  alert('已退出登录');
+}
+
+function loadNoticeClassList() {
+  const sel = document.getElementById('noticeClassSelector');
+  const classes = JSON.parse(localStorage.getItem('classes') || '[]');
+  sel.innerHTML = '<option value="">请选择班级</option>';
+  classes.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.code;
+    opt.textContent = c.name;
+    sel.appendChild(opt);
+  });
+  sel.onchange = loadNoticeHistory;
+}
+
+function publishNotice() {
+  const classCode = document.getElementById('noticeClassSelector').value;
+  const content = document.getElementById('noticeContent').value.trim();
+  if (!classCode) { alert('请先选择班级'); return; }
+  if (!content) { alert('请输入公告内容'); return; }
+  if (!currentTeacher.name) { alert('请先登录'); return; }
+
+  const classes = JSON.parse(localStorage.getItem('classes') || '[]');
+  const cls = classes.find(c => c.code === classCode);
+  if (!cls) { alert('班级不存在'); return; }
+
+  const notice = {
+    classCode,
+    className: cls.name,
+    teacherAccount: currentTeacher.account,
+    teacherName: currentTeacher.name,
+    content,
+    createTime: new Date()
+  };
+
+  const list = JSON.parse(localStorage.getItem('notices') || '[]');
+  list.unshift(notice);
+  localStorage.setItem('notices', JSON.stringify(list));
+
+  document.getElementById('noticeContent').value = '';
+  loadNoticeHistory();
+  alert('✅ 公告发布成功！');
+}
+
+function loadNoticeHistory() {
+  const classCode = document.getElementById('noticeClassSelector').value;
+  const box = document.getElementById('noticeHistoryList');
+  if (!classCode) {
+    box.innerHTML = '<p class="empty-tip">请选择班级查看历史公告</p>';
+    return;
+  }
+  const all = JSON.parse(localStorage.getItem('notices') || '[]');
+  const list = all.filter(n => n.classCode === classCode);
+  if (list.length === 0) {
+    box.innerHTML = '<p class="empty-tip">该班级暂无历史公告</p>';
+    return;
+  }
+  let html = '';
+  list.forEach((n, i) => {
+    html += `
+    <div style="border:1px solid #eee; border-radius:8px; padding:12px; margin-bottom:10px;">
+      <div style="font-size:14px; color:#666;">${i+1}. ${new Date(n.createTime).toLocaleString()}</div>
+      <div style="margin:5px 0; line-height:1.5;">${n.content}</div>
+      <div style="font-size:12px; color:#999;">发布人：${n.teacherName} 老师</div>
+    </div>
+    `;
+  });
+  box.innerHTML = html;
+}
+
+window.onload = function() {
+  const t = JSON.parse(localStorage.getItem('currentTeacher') || '{}');
+  if (t.account && t.name) {
+    currentTeacher = t;
+    document.getElementById('authModal').style.display = 'none';
+    document.getElementById('logoutButton').style.display = 'flex';
+    loadTeacherClasses();
+  }
+  if (typeof testCloudConn === 'function') testCloudConn();
+};
+</script>
+</body>
+</html>

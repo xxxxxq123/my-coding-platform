@@ -1,0 +1,413 @@
+/* ======================================
+   全局通用基础样式（学生 + 教师共用）
+====================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: '微软雅黑';
+  padding: 20px;
+  position: relative;
+  padding-top: 60px;
+  margin: 0;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+textarea {
+  width: 100%;
+  height: 200px;
+  font-size: 16px;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 18px;
+  margin: 10px;
+  cursor: pointer;
+}
+
+/* 状态颜色样式（成功/错误/警告/默认） */
+.success { background: #e8f5e9; color: #2e7d32; }
+.error { background: #ffebee; color: #c62828; }
+.warning { background: #fff8e1; color: #ff8f00; }
+.default { background: #f5f5f5; color: #424242; }
+
+/* 统计与提示文字 */
+.stats { color: #1976d2; margin: 8px 0; }
+.feedback { background: #f3e5f5; padding: 8px; border-radius: 4px; margin: 8px 0; }
+.suggestion { background: #e1f5fe; padding: 10px; border-radius: 4px; margin-top: 10px; }
+
+
+/* 退出登录按钮 */
+.logout-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s ease;
+  z-index: 999;
+}
+
+.logout-btn:hover {
+  background: #d32f2f;
+}
+
+
+/* ======================================
+   学生端专用样式
+====================================== */
+
+/* 1. 代码运行区域样式 */
+#output {
+  border: 1px solid #ccc;
+  padding: 15px;
+  min-height: 100px;
+  border-radius: 4px;
+}
+
+#cloudStatus {
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  min-height: 30px;
+}
+
+/* 题目选择器 */
+#problemSelector {
+  padding: 8px 12px;
+  font-size: 16px;
+  margin: 10px 0;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  width: 350px;
+}
+
+/* 2. 登录 / 注册弹窗样式 */
+#authModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("img/img1.png") center/cover no-repeat;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+#authModal .modal-content {
+  background: rgba(255, 254, 254, 0.5);
+  padding: 20px 30px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+#authModal .modal-content input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+#authModal .modal-content button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+#authModal .modal-content a {
+  text-decoration: none;
+}
+
+#authModal .modal-content h3 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* 3. 学习进度条 + 星星样式 */
+#progressContainer {
+  margin: 20px 0;
+  padding: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.progress-bar {
+  height: 20px;
+  background: #e0e0e0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 10px 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #8ecef0;
+  width: 0%;
+  transition: width 0.5s ease;
+}
+
+.stars-container {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.star {
+  font-size: 24px;
+  color: #ccc;
+  transition: color 0.3s ease;
+}
+
+.star.completed {
+  color: #ffc107;
+}
+
+.problem-status {
+  margin: 5px 0;
+  font-size: 16px;
+}
+
+.problem-status .completed-tag {
+  color: #88caeb;
+  font-weight: bold;
+  margin-left: 8px;
+}
+
+/* 4. 加载动画（运行代码时） */
+#loadingAnimation {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9998;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #1976d2;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 5. 答题成功庆祝动画 */
+#celebrationAnimation {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9997;
+}
+
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #f2d74e;
+  opacity: 0;
+  animation: confetti 5s ease-in-out forwards;
+}
+
+@keyframes confetti {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+
+
+
+/* ======================================
+   教师端专用样式
+====================================== */
+
+/* 1. 教师管理面板整体 */
+.teacher-section {
+  margin: 30px 0;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.teacher-section h2 {
+  color: #1976d2;
+  margin-top: 0;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 10px;
+}
+
+/* 2. 班级创建与控制栏 */
+.class-controls {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.class-controls input {
+  padding: 8px 12px;
+  font-size: 16px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  flex: 1;
+  min-width: 200px;
+}
+
+/* 3. 班级列表 + 学生列表样式 */
+.class-list, .student-list {
+  margin-top: 20px;
+}
+
+.class-item, .student-item {
+  padding: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  background: white;
+}
+
+.class-item h4, .student-item h4 {
+  margin-top: 0;
+  color: #333;
+}
+
+.empty-tip {
+  color: #757575;
+  text-align: center;
+  padding: 20px;
+}
+
+/* 4. 学生代码查看弹窗 */
+#codeViewModal pre {
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 14px;
+}
+
+/* 5. 删除班级按钮 */
+.delete-class-btn {
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.delete-class-btn:hover {
+  background: #d32f2f;
+}
+
+/* 6. 侧边栏菜单（教师端） */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -250px;
+  width: 250px;
+  height: 100vh;
+  background: #f5f5f5;
+  border-right: 1px solid #e0e0e0;
+  transition: left 0.3s ease;
+  z-index: 9999;
+}
+
+.sidebar.open {
+  left: 0;
+}
+
+.sidebar-menu {
+  margin-top: 60px;
+}
+
+.sidebar-menu .menu-item {
+  padding: 15px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #e0e0e0;
+  transition: background 0.2s ease;
+}
+
+.sidebar-menu .menu-item:hover {
+  background: #e3f2fd;
+}
+
+.sidebar-menu .menu-item.active {
+  background: #1976d2;
+  color: white;
+}
+
+/* 7. 顶部栏与菜单开关 */
+.top-bar {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px 20px;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.toggle-sidebar-btn {
+  background: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.toggle-sidebar-btn:hover {
+  background: #1565c0;
+}
+
+/* 8. 主内容区域（适配侧边栏） */
+.main-content {
+  margin-left: 0;
+  transition: margin-left 0.3s ease;
+}
+
+.main-content.shift {
+  margin-left: 250px;
+}
