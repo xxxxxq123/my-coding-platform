@@ -411,3 +411,87 @@ button {
 .main-content.shift {
   margin-left: 250px;
 }
+
+
+
+
+.home-row {
+  display: flex;
+  gap: 20px;
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+.home-left {
+  flex: 0 0 500px;
+}
+.home-right {
+  flex: 1;
+}
+/* 新增：Monaco 编辑器样式 */
+#code {
+  width: 100%;
+  height: 220px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  margin: 10px 0;
+}
+/* 新增：字体调节按钮样式 */
+.font-btn {
+  padding: 6px 12px;
+  margin: 0 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  font-weight: bold;
+}
+.font-btn:hover {
+  background: #f0f0f0;
+}
+/* 新增：个人信息页面样式 */
+#page-profile {
+  padding: 20px;
+}
+.profile-card {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 30px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fafafa;
+}
+.profile-info-item {
+  margin: 18px 0;
+  font-size: 18px;
+}
+.profile-info-item span:first-child {
+  font-weight: bold;
+  color: #333;
+}
+.change-pwd-form {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+.change-pwd-form input {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 15px;
+}
+.change-pwd-btn {
+  background: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 10px;
+}
+.change-pwd-btn:hover {
+  background: #1565c0;
+}
