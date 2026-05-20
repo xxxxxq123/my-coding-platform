@@ -5,7 +5,6 @@
   "main": "index.html",
   "scripts": {
     "start": "npx serve . -l 3000",
-    "build": "echo 'Build completed'",
     "dev": "npx live-server"
   },
   "dependencies": {
