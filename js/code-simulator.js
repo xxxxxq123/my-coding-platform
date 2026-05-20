@@ -12,8 +12,7 @@ class CodeSimulator {
   }
 
   /**
-   * 步骤1：初始化预设题目（2-3个）
-   * 每个题目包含ID、标题、代码模板、预期输出、题目类型
+   * 步骤1：初始化预设题目（新增难度、知识点标签、参考代码）
    */
   initProblems() {
     this.problems = [
@@ -21,6 +20,8 @@ class CodeSimulator {
         id: 1,
         title: "输出\"Hello World\"",
         type: "simple-output", // 简单输出类题目
+        difficulty: 1, // 1星简单
+        tags: ["基础输出", "cout语句"],
         codeTemplate: `#include <iostream>
 using namespace std;
 
@@ -28,12 +29,21 @@ int main() {
   // 请在这里编写代码输出 Hello World
   return 0;
 }`,
-        expectedOutput: "Hello World"
+        expectedOutput: "Hello World",
+        referenceCode: `#include <iostream>
+using namespace std;
+
+int main() {
+  cout << "Hello World";
+  return 0;
+}`
       },
       {
         id: 2,
         title: "计算1+2的结果并输出",
         type: "calculation", // 计算类题目
+        difficulty: 2, // 2星中等
+        tags: ["变量定义", "数学运算", "结果输出"],
         codeTemplate: `#include <iostream>
 using namespace std;
 
@@ -44,12 +54,23 @@ int main() {
   // 补充代码
   return 0;
 }`,
-        expectedOutput: "3"
+        expectedOutput: "3",
+        referenceCode: `#include <iostream>
+using namespace std;
+
+int main() {
+  int a = 1;
+  int b = 2;
+  cout << a + b;
+  return 0;
+}`
       },
       {
         id: 3,
         title: "用循环输出5个星号（一行）",
         type: "loop-output", // 循环输出类题目
+        difficulty: 3, //3星困难
+        tags: ["for循环", "循环结构", "批量输出"],
         codeTemplate: `#include <iostream>
 using namespace std;
 
@@ -57,7 +78,16 @@ int main() {
   // 请用循环输出5个星号（一行显示）
   return 0;
 }`,
-        expectedOutput: "*****"
+        expectedOutput: "*****",
+        referenceCode: `#include <iostream>
+using namespace std;
+
+int main() {
+  for(int i=0; i<5; i++){
+    cout << "*";
+  }
+  return 0;
+}`
       }
     ];
   }
@@ -301,14 +331,14 @@ int main() {
     if (result.errors.length > 0) {
       report += `
 错误列表：
-${result.errors.map((err, idx) => `  ${idx+1}. ${err}`).join("\n")}`;
+${result.errors.map((err, idx) => `  ${idx+1}. ${err}`).join('\n')}`;
     }
 
     // 追加警告信息
     if (result.warnings.length > 0) {
       report += `
 警告列表：
-${result.warnings.map((warn, idx) => `  ${idx+1}. ${warn}`).join("\n")}`;
+${result.warnings.map((warn, idx) => `  ${idx+1}. ${warn}`).join('\n')}`;
     }
 
     report += `
@@ -371,4 +401,5 @@ if (typeof module !== 'undefined' && module.exports) {
 // 挂载到window全局，供前端页面直接访问
 if (typeof window !== 'undefined') {
   window.CodeSimulator = CodeSimulator;
+  window.codeSimulator = new CodeSimulator();
 }

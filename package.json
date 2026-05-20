@@ -1,0 +1,26 @@
+{
+  "name": "kids-coding-platform",
+  "version": "1.0.0",
+  "description": "小学生C++编程学习平台",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve . -l 3000",
+    "build": "echo 'Build completed'",
+    "dev": "npx live-server"
+  },
+  "dependencies": {
+    "xlsx": "0.18.5"
+  },
+  "devDependencies": {
+    "live-server": "1.2.2",
+    "serve": "14.2.1"
+  },
+  "browserslist": {
+    "production": [
+      "last 2 versions"
+    ],
+    "development": [
+      "last 2 versions"
+    ]
+  }
+}

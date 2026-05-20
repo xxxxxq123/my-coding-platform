@@ -3,29 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <title>小学生编程乐园</title>
+<!-- Monaco 编辑器依赖 -->
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
 <script src="https://res.wx.qq.com/open/js/cloudbase/1.1.0/cloud.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.9.1/fonts/remixicon.css">
 <link rel="stylesheet" href="css/style.css">
-<style>
-.home-row {
-  display: flex;
-  gap: 20px;
-  max-width: 1200px;
-  margin: 40px auto;
-  padding: 0 20px;
-}
-.home-left {
-  flex: 0 0 500px;
-}
-.home-right {
-  flex: 1;
-}
-</style>
+
 </head>
 <body>
 
 <div id="sidebarOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.3);z-index:9998;" onclick="hideSidebar()"></div>
 
+<!-- 侧边栏 -->
 <div class="sidebar" id="sidebar">
   <div class="sidebar-menu">
     <div class="menu-item active" onclick="navigateTo('home')">
@@ -36,6 +25,9 @@
     </div>
     <div class="menu-item" onclick="navigateTo('class')">
       <i class="ri-team-fill"></i> 我的班级
+    </div>
+    <div class="menu-item" onclick="navigateTo('profile')">
+      <i class="ri-user-settings-line"></i> 个人信息
     </div>
   </div>
 </div>
@@ -52,6 +44,7 @@
 
 <div class="main-content" id="mainContent">
 
+  <!-- 首页 -->
   <div id="page-home" class="page-content active">
     <div class="home-row">
       <div class="home-left">
@@ -87,6 +80,7 @@
     </div>
   </div>
 
+  <!-- 练习页面 -->
   <div id="page-practice" class="page-content" style="display:none;">
     <div id="progressContainer">
       <h3>📈 学习进度</h3>
@@ -103,23 +97,36 @@
       <div class="problem-status">3. 循环输出5个星号 <span id="status3"></span></div>
     </div>
 
-    <select id="problemSelector">
+    <!-- 题目卡片区域 -->
+    <h3 style="margin:15px 0;">📝 选择编程练习题</h3>
+    <div id="problemCardContainer" class="problem-card-container"></div>
+
+    <select id="problemSelector" style="display:none;">
       <option value="">📝 请选择编程题目</option>
       <option value="1">1. 输出Hello World</option>
       <option value="2">2. 计算1+2</option>
       <option value="3">3. 循环输出5个星号</option>
     </select>
 
-    <textarea id="code">#include <iostream>
-using namespace std;
-int main() {
-cout << "Hello World!" << endl;
-return 0;
-}</textarea>
+    <!-- 参考代码面板 -->
+    <div class="reference-code-wrap">
+      <button class="fold-ref-btn" onclick="toggleRefCodePanel()">💡 点击查看参考示例代码</button>
+      <div id="refCodeBox" class="ref-code-box">
+        <pre id="refCodeText">请先选择对应题目查看参考代码</pre>
+      </div>
+    </div>
+
+    <div style="margin:15px 0;"></div>
+    <button class="font-btn" onclick="adjustFontSize(1)">A+</button>
+    <button class="font-btn" onclick="adjustFontSize(-1)">A-</button>
+    <button class="font-btn" onclick="resetFontSize()">默认字体</button>
+
+    <div id="code"></div>
     <br>
 
+    <!-- 仅保留：运行代码 + 保存代码 按钮 -->
     <button onclick="runCode()"><i class="ri-play-large-fill"></i>运行代码</button>
-    <button onclick="testCloudConn()"><i class="ri-links-line"></i>测试云连接</button>
+    <button onclick="saveCode()"><i class="ri-save-3-fill"></i>保存代码</button>
 
     <div id="cloudStatus" class="default">连接状态：未初始化</div>
     <div id="output">运行结果会显示在这里...</div>
@@ -128,6 +135,7 @@ return 0;
     <div id="celebrationAnimation"></div>
   </div>
 
+  <!-- 班级页面 -->
   <div id="page-class" class="page-content" style="display:none;">
     <div style="padding:20px; max-width:800px; margin:0 auto;">
       <h2>👨‍👩‍👧‍👦 我的班级</h2>
@@ -148,6 +156,29 @@ return 0;
     </div>
   </div>
 
+  <!-- 个人信息页面 -->
+  <div id="page-profile" class="page-content" style="display:none;">
+    <div class="profile-card">
+      <h2>👤 个人信息</h2>
+      <div class="profile-info-item">
+        <span>姓名：</span>
+        <span id="profileDetailName">未登录</span>
+      </div>
+      <div class="profile-info-item">
+        <span>账号：</span>
+        <span id="profileDetailAccount">-</span>
+      </div>
+
+      <div class="change-pwd-form">
+        <h3>修改密码</h3>
+        <input type="password" id="profileOldPwd" placeholder="请输入原密码">
+        <input type="password" id="profileNewPwd" placeholder="请输入新密码">
+        <input type="password" id="profileConfirmPwd" placeholder="请确认新密码">
+        <button onclick="changePassword()" class="change-pwd-btn">保存修改</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- 登录注册弹窗 -->
@@ -159,9 +190,7 @@ return 0;
       <input type="password" id="loginPwd" placeholder="密码">
       <button onclick="doLogin()" style="background:#1976d2;">登录</button>
       <p style="text-align:center;">没有账号？<a href="javascript:switchTab('register')">注册</a></p>
-      <a href="teacher.html" style="float: right; margin-left: auto;">
-        教师<i class="ri-arrow-right-circle-line"></i>
-        </a>
+      <a href="teacher.html" style="float: right; margin-left: auto;">教师<i class="ri-arrow-right-circle-line"></i></a>
     </div>
     <div id="registerTab" style="display:none;">
       <h3>📝 注册</h3>
@@ -170,7 +199,6 @@ return 0;
       <input type="text" id="regClassCode" placeholder="班级码（选填）">
       <button onclick="doRegister()" style="background:#43a047;">注册</button>
       <p style="text-align:center;">已有账号？<a href="javascript:switchTab('login')">登录</a></p>
-       
     </div>
   </div>
 </div>
@@ -181,7 +209,279 @@ return 0;
 <script src="js/main.js"></script>
 
 <script>
-// 侧边栏
+// ===================== 编辑器 + 字体调节 =====================
+let monacoEditor;
+let monacoReady = false; 
+const DEFAULT_FONT_SIZE = 14;
+let currentFontSize = parseInt(localStorage.getItem('editorFontSize')) || DEFAULT_FONT_SIZE;
+
+function initMonacoEditor() {
+  require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }});
+  require(['vs/editor/editor.main'], function() {
+    monacoEditor = monaco.editor.create(document.getElementById('code'), {
+      value: `#include <iostream>
+using namespace std;
+int main() {
+cout << "Hello World!" << endl;
+return 0;
+}`,
+      language: 'cpp',       
+      theme: 'vs',           
+      fontSize: currentFontSize,
+      lineNumbers: 'on',     
+      minimap: { enabled: false },
+      automaticLayout: true,
+      tabSize: 2
+    });
+    window.monacoEditor = monacoEditor;
+    monacoReady = true;
+    renderAllProblemCards();
+  });
+}
+
+function adjustFontSize(step) {
+  if(!monacoReady || !monacoEditor) return;
+  currentFontSize += step;
+  if(currentFontSize < 12) currentFontSize = 12;
+  if(currentFontSize > 20) currentFontSize = 20;
+  monacoEditor.updateOptions({ fontSize: currentFontSize });
+  localStorage.setItem('editorFontSize', currentFontSize);
+}
+
+function resetFontSize() {
+  if(!monacoReady || !monacoEditor) return;
+  currentFontSize = DEFAULT_FONT_SIZE;
+  monacoEditor.updateOptions({ fontSize: currentFontSize });
+  localStorage.setItem('editorFontSize', currentFontSize);
+}
+
+// ===================== 自动云连接 + 自动保存 + 运行代码 =====================
+async function runCode() {
+  const output = document.getElementById('output');
+  const problemSelector = document.getElementById('problemSelector');
+  const problemId = parseInt(problemSelector?.value);
+
+  // 1. 自动测试云连接
+  const cloudStatus = document.getElementById('cloudStatus');
+  cloudStatus.innerHTML = '正在连接云服务...';
+  await new Promise(resolve => setTimeout(resolve, 300));
+  cloudStatus.className = 'success';
+  cloudStatus.innerHTML = '✅ 云连接成功';
+
+  // 2. 自动保存代码（关闭弹窗）
+  saveCode(false);
+
+  // 3. 获取代码
+  let code;
+  if (monacoReady && monacoEditor) {
+    code = monacoEditor.getValue();
+  } else {
+    code = document.getElementById('code').innerText;
+  }
+
+  // 4. 语法检查
+  const checkResult = window.preCheckBeforeRun(problemId, code);
+  if (!checkResult.pass) {
+    output.innerHTML = `<p style="color: #c62828;">❌ ${checkResult.message}</p>`;
+    return;
+  }
+
+  showLoadingAnimation();
+  output.innerHTML = "";
+
+  // 5. 执行代码判题
+  let simulationResult = null;
+  try {
+    const codeSimulator = window.codeSimulator || new CodeSimulator();
+    simulationResult = codeSimulator.simulateExecution(code, problemId);
+    renderSimulationResult(output, simulationResult, problemId);
+    if (simulationResult.success && simulationResult.score === 100) {
+      markProblemCompleted(problemId);
+    }
+  } catch (simErr) {
+    output.innerHTML += `<p style="color: #c62828;">❌ 代码模拟执行失败：${simErr.message}</p>`;
+    console.error('代码模拟执行失败', simErr);
+  } finally {
+    hideLoadingAnimation();
+  }
+
+  // 6. 保存提交记录
+  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+  const realAccount = currentUser.account || '';
+  const realName = currentUser.name || '';
+  const realClassName = currentUser.className || '';
+
+  const submitData = {
+    account: realAccount,
+    name: realName,
+    className: realClassName,
+    age: Math.floor(Math.random() * 5) + 18,
+    createTime: new Date(),
+    isTestData: !realAccount,
+    problemId: problemId,
+    problemTitle: (window.codeSimulator || new CodeSimulator()).getProblemById(problemId)?.title || '未知题目',
+    userCode: code,
+    simulationResult: simulationResult ? {
+      success: simulationResult.success,
+      score: simulationResult.score,
+      output: simulationResult.output,
+      expectedOutput: simulationResult.expectedOutput,
+      errors: simulationResult.errors,
+      feedback: simulationResult.feedback,
+      completed: simulationResult.success && simulationResult.score === 100
+    } : null
+  };
+
+  let allSubmits = JSON.parse(localStorage.getItem('students_submit') || '[]');
+  allSubmits = allSubmits.filter(item => 
+    !(item.account === submitData.account && item.problemId === submitData.problemId)
+  );
+  allSubmits.push(submitData);
+  localStorage.setItem('students_submit', JSON.stringify(allSubmits));
+  await saveStudentSubmitData(submitData);
+}
+
+// ===================== 代码保存/加载 =====================
+// 核心修改：手动保存弹弹窗，自动保存不弹窗
+function saveCode(showAlert = true){
+  const sel = document.getElementById('problemSelector');
+  const pid = sel.value;
+  if(!pid){
+    alert("请先选择题目再保存代码！");
+    return;
+  }
+  let code = monacoEditor ? monacoEditor.getValue() : document.getElementById('code').innerText;
+  const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+  const saveKey = `user_code_${user.account||"guest"}_${pid}`;
+  localStorage.setItem(saveKey, code);
+  
+  // 仅手动点击保存时弹出提示
+  if(showAlert){
+    alert("✅ 代码保存成功！");
+  }
+}
+
+function loadSavedCode(pid){
+  const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+  const saveKey = `user_code_${user.account||"guest"}_${pid}`;
+  const saveCode = localStorage.getItem(saveKey);
+  const sim = new CodeSimulator();
+  const info = sim.getProblemById(pid);
+  if(saveCode && monacoEditor){
+    monacoEditor.setValue(saveCode);
+  }else if(info && monacoEditor){
+    monacoEditor.setValue(info.codeTemplate);
+  }
+}
+
+// ===================== 题目卡片切换 =====================
+function switchProblemByCard(pid){
+  const sel = document.getElementById('problemSelector');
+  sel.value = pid;
+  loadSavedCode(pid);
+  const simulator = new CodeSimulator();
+  const problem = simulator.getProblemById(pid);
+  if(problem){
+    document.getElementById('refCodeText').innerText = problem.referenceCode;
+  }
+  highlightActiveCard(pid);
+}
+
+function renderAllProblemCards(){
+  const container = document.getElementById('problemCardContainer');
+  const sim = new CodeSimulator();
+  const list = sim.getAllProblems();
+  let html = '';
+  list.forEach(item=>{
+    let starStr = '';
+    for(let i=1;i<=3;i++){
+      starStr += i <= item.difficulty ? '<span class="star-light">★</span>' : '<span class="star-gray">★</span>';
+    }
+    let tagHtml = '';
+    item.tags.forEach(tag=>{
+      tagHtml += `<span class="know-tag">${tag}</span>`;
+    });
+    const isDone = problemProgress[item.id];
+    const doneIcon = isDone ? '<span class="done-icon">✅ 已完成</span>' : '';
+
+    html += `
+    <div class="problem-card" data-pid="${item.id}" onclick="switchProblemByCard(${item.id})">
+      <div class="card-title">${item.title} ${doneIcon}</div>
+      <div class="card-diff">难度：${starStr}</div>
+      <div class="card-tags">${tagHtml}</div>
+    </div>
+    `;
+  });
+  container.innerHTML = html;
+}
+
+function highlightActiveCard(pid){
+  document.querySelectorAll('.problem-card').forEach(card=>{
+    if(Number(card.dataset.pid === pid)){
+      card.classList.add('active-card');
+    }else{
+      card.classList.remove('active-card');
+    }
+  });
+}
+
+// ===================== 参考代码折叠 =====================
+function toggleRefCodePanel(){
+  const box = document.getElementById('refCodeBox');
+  box.classList.toggle('show-ref');
+}
+
+// ===================== 个人信息 =====================
+function loadProfileData() {
+  const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+  const nameEl = document.getElementById('profileDetailName');
+  const accountEl = document.getElementById('profileDetailAccount');
+  
+  if (user.account) {
+    nameEl.textContent = user.name || '学生';
+    accountEl.textContent = user.account;
+  } else {
+    nameEl.textContent = '未登录';
+    accountEl.textContent = '-';
+  }
+}
+
+function changePassword() {
+  const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+  if (!user.account) {
+    alert('请先登录！');
+    return;
+  }
+
+  const oldPwd = document.getElementById('profileOldPwd').value.trim();
+  const newPwd = document.getElementById('profileNewPwd').value.trim();
+  const confirmPwd = document.getElementById('profileConfirmPwd').value.trim();
+
+  if (!oldPwd || !newPwd || !confirmPwd) {
+    alert('请填写完整信息！');
+    return;
+  }
+  if (newPwd !== confirmPwd) {
+    alert('两次输入的新密码不一致！');
+    return;
+  }
+
+  const users = JSON.parse(localStorage.getItem('users') || '{}');
+  if (!users[user.account] || users[user.account].password !== oldPwd) {
+    alert('原密码错误！');
+    return;
+  }
+
+  users[user.account].password = newPwd;
+  localStorage.setItem('users', JSON.stringify(users));
+  
+  alert('密码修改成功！');
+  document.getElementById('profileOldPwd').value = '';
+  document.getElementById('profileNewPwd').value = '';
+  document.getElementById('profileConfirmPwd').value = '';
+}
+
+// ===================== 通用功能 =====================
 function toggleSidebar(){
   const s=document.getElementById('sidebar');
   const m=document.getElementById('mainContent');
@@ -196,23 +496,22 @@ function hideSidebar(){
   document.getElementById('sidebarOverlay').style.display='none';
 }
 
-// 页面切换
 function navigateTo(page){
   document.querySelectorAll('.page-content').forEach(e=>e.style.display='none');
   document.getElementById('page-'+page).style.display='block';
   document.querySelectorAll('.menu-item').forEach(i=>i.classList.remove('active'));
   event.currentTarget.classList.add('active');
+  
+  if(page === 'profile') loadProfileData();
   if(page==='home')loadMyClassOptions();
   if(page==='class')loadMyClass();
 }
 
-// 登录注册标签切换
 function switchTab(t){
   document.getElementById('loginTab').style.display=t=='login'?'block':'none';
   document.getElementById('registerTab').style.display=t=='register'?'block':'none';
 }
 
-// 登录：支持账号 / 姓名登录
 function doLogin(){
   const loginText = document.getElementById('loginAccount').value.trim();
   const pwd = document.getElementById('loginPwd').value.trim();
@@ -226,12 +525,10 @@ function doLogin(){
   let targetUser = null;
   let targetAccount = null;
 
-  // 先按账号匹配
   if(users[loginText]){
     targetUser = users[loginText];
     targetAccount = loginText;
   }else{
-    // 再按姓名匹配
     for(let account in users){
       if(users[account].name === loginText){
         targetUser = users[account];
@@ -261,7 +558,6 @@ function doLogin(){
   alert(`🎉 登录成功！\n你的账号：${targetAccount}`);
 }
 
-// 注册：只填姓名、密码、班级码(选填)，自动生成8位账号
 function doRegister(){
   const name = document.getElementById('regName').value.trim();
   const pwd = document.getElementById('regPwd').value.trim();
@@ -273,14 +569,11 @@ function doRegister(){
   }
 
   const users = JSON.parse(localStorage.getItem('users') || '{}');
-
-  // 生成唯一8位数字账号
   let account;
   do {
     account = Math.floor(10000000 + Math.random() * 90000000).toString();
   } while(users[account]);
 
-  // 保存学生信息
   users[account] = {
     password: pwd,
     name: name,
@@ -288,14 +581,12 @@ function doRegister(){
   };
   localStorage.setItem('users', JSON.stringify(users));
 
-  // 登录当前用户
   localStorage.setItem('currentUser', JSON.stringify({
     account: account,
     name: name,
     classCode: classCode
   }));
 
-  // 初始化做题进度
   localStorage.setItem('student_'+account, JSON.stringify({"1":false,"2":false,"3":false}));
   loadUserInfoByKey('student_'+account);
   updateProgressDisplay();
@@ -303,7 +594,6 @@ function doRegister(){
   document.getElementById('authModal').style.display='none';
   document.getElementById('logoutButton').style.display='flex';
 
-  // 有班级码自动加入班级
   if(classCode){
     bindStudentClassCode(classCode);
   }
@@ -313,14 +603,12 @@ function doRegister(){
 请保存好账号，下次可账号/姓名登录`);
 }
 
-// 手动加入班级
 function bindMyClass(){
   const code=document.getElementById('bindClassInput').value.trim();
   if(!code){alert('请输入班级码');return;}
   bindStudentClassCode(code).then(()=>loadMyClass());
 }
 
-// 退出登录
 function doLogout(){
   if(!confirm('确定退出？'))return;
   localStorage.removeItem('currentUser');
@@ -330,7 +618,6 @@ function doLogout(){
   alert('已退出');
 }
 
-// 更新进度界面
 window.updateProgressDisplay=function(){
   const p=JSON.parse(localStorage.getItem('problemProgress')||'{"1":false,"2":false,"3":false}');
   const ok=Object.values(p).filter(Boolean).length;
@@ -339,20 +626,12 @@ window.updateProgressDisplay=function(){
     document.getElementById('star'+i).classList.toggle('completed',p[i]);
     document.getElementById('status'+i).innerHTML=p[i]?'<span class="completed-tag">已完成</span>':'';
   }
-};
-
-// 云连接测试
-window.testCloudConn=function(){
-  const s=document.getElementById('cloudStatus');
-  s.innerHTML='测试中...';
-  setTimeout(()=>{
-    s.className='success';
-    s.innerHTML='✅ 云连接正常';
-  },600);
+  renderAllProblemCards();
 };
 
 // 页面初始化
 window.onload=function(){
+  initMonacoEditor(); 
   const u=JSON.parse(localStorage.getItem('currentUser')||'{}');
   if(u.account){
     loadUserInfoByKey('student_'+u.account);
