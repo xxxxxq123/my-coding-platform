@@ -12,80 +12,140 @@ class CodeSimulator {
   }
 
   /**
-   * 步骤1：初始化预设题目（新增难度、知识点标签、参考代码）
+   * 步骤1：初始化5道新题目
    */
   initProblems() {
     this.problems = [
       {
         id: 1,
-        title: "输出\"Hello World\"",
-        type: "simple-output", // 简单输出类题目
-        difficulty: 1, // 1星简单
+        title: "输出Hello",
+        type: "simple-output",
+        difficulty: 1,
         tags: ["基础输出", "cout语句"],
         codeTemplate: `#include <iostream>
 using namespace std;
 
 int main() {
-  // 请在这里编写代码输出 Hello World
+  // 请在这里编写代码输出 Hello
   return 0;
 }`,
-        expectedOutput: "Hello World",
+        expectedOutput: "Hello",
         referenceCode: `#include <iostream>
 using namespace std;
 
 int main() {
-  cout << "Hello World";
+  cout << "Hello";
   return 0;
 }`
       },
       {
         id: 2,
-        title: "计算1+2的结果并输出",
-        type: "calculation", // 计算类题目
-        difficulty: 2, // 2星中等
+        title: "两数之和",
+        type: "calculation",
+        difficulty: 2,
         tags: ["变量定义", "数学运算", "结果输出"],
         codeTemplate: `#include <iostream>
 using namespace std;
 
 int main() {
-  // 请编写代码计算1+2并输出结果
-  int a = 1;
-  int b = 2;
-  // 补充代码
+  // 计算10+20的结果并输出
+  int a = 10;
+  int b = 20;
   return 0;
 }`,
-        expectedOutput: "3",
+        expectedOutput: "30",
         referenceCode: `#include <iostream>
 using namespace std;
 
 int main() {
-  int a = 1;
-  int b = 2;
+  int a = 10;
+  int b = 20;
   cout << a + b;
   return 0;
 }`
       },
       {
         id: 3,
-        title: "用循环输出5个星号（一行）",
-        type: "loop-output", // 循环输出类题目
-        difficulty: 3, //3星困难
-        tags: ["for循环", "循环结构", "批量输出"],
+        title: "判断奇偶",
+        type: "judge-odd-even",
+        difficulty: 2,
+        tags: ["条件判断", "取模运算", "if语句"],
         codeTemplate: `#include <iostream>
 using namespace std;
 
 int main() {
-  // 请用循环输出5个星号（一行显示）
+  // 判断数字7是奇数还是偶数并输出
+  int num = 7;
   return 0;
 }`,
-        expectedOutput: "*****",
+        expectedOutput: "奇数",
         referenceCode: `#include <iostream>
 using namespace std;
 
 int main() {
-  for(int i=0; i<5; i++){
-    cout << "*";
+  int num = 7;
+  if(num % 2 == 0){
+    cout << "偶数";
+  }else{
+    cout << "奇数";
   }
+  return 0;
+}`
+      },
+      {
+        id: 4,
+        title: "1到10求和",
+        type: "sum-calc",
+        difficulty: 3,
+        tags: ["循环结构", "累加运算", "for循环"],
+        codeTemplate: `#include <iostream>
+using namespace std;
+
+int main() {
+  // 计算1+2+...+10的总和并输出
+  int sum = 0;
+  return 0;
+}`,
+        expectedOutput: "55",
+        referenceCode: `#include <iostream>
+using namespace std;
+
+int main() {
+  int sum = 0;
+  for(int i=1; i<=10; i++){
+    sum += i;
+  }
+  cout << sum;
+  return 0;
+}`
+      },
+      {
+        id: 5,
+        title: "数组最大值",
+        type: "array-max",
+        difficulty: 3,
+        tags: ["数组", "遍历", "最大值查找"],
+        codeTemplate: `#include <iostream>
+using namespace std;
+
+int main() {
+  // 找出数组 [3,7,2,9,1] 中的最大值并输出
+  int arr[] = {3,7,2,9,1};
+  return 0;
+}`,
+        expectedOutput: "9",
+        referenceCode: `#include <iostream>
+using namespace std;
+
+int main() {
+  int arr[] = {3,7,2,9,1};
+  int max = arr[0];
+  for(int i=1; i<5; i++){
+    if(arr[i] > max){
+      max = arr[i];
+    }
+  }
+  cout << max;
   return 0;
 }`
       }
@@ -94,57 +154,46 @@ int main() {
 
   /**
    * 根据题目ID获取题目信息
-   * @param {number|string} problemId 题目ID（兼容字符串/数字类型）
-   * @returns {object|null} 题目信息对象 / null（未找到）
    */
   getProblemById(problemId) {
-    // 统一转为数字类型，避免类型不匹配
     const id = parseInt(problemId);
     return this.problems.find(p => p.id === id) || null;
   }
 
   /**
-   * 步骤1/2：代码分析方法（analyzeCode）
-   * @param {string} code - 学生输入的代码字符串
-   * @returns {object} 分析结果：错误列表、警告列表、是否通过语法检查
+   * 代码语法分析
    */
   analyzeCode(code) {
     const result = {
-      errors: [],        // 致命错误（语法不通过）
-      warnings: [],      // 警告（不影响执行但不规范）
-      isSyntaxValid: true // 语法检查是否通过
+      errors: [],
+      warnings: [],
+      isSyntaxValid: true
     };
 
-    // 规则1：检查必要头文件（C++ 输出必备）
     if (!code.includes("#include <iostream>") && !code.includes("#include \"iostream\"")) {
       result.errors.push("缺少必要头文件：iostream（C++输出功能依赖）");
       result.isSyntaxValid = false;
     }
 
-    // 规则2：检查main函数（程序入口）
     if (!code.match(/int\s+main\s*\(/)) {
       result.errors.push("缺少main函数：程序必须有且仅有一个main函数作为入口");
       result.isSyntaxValid = false;
     }
 
-    // 规则3：检查危险代码
     if (code.includes("system(")) {
       result.errors.push("检测到危险代码：system()调用可能导致安全风险，禁止使用");
       result.isSyntaxValid = false;
     }
 
-    // 规则4：检查输出语句
     if (!code.includes("cout") && !code.includes("printf")) {
       result.errors.push("缺少输出语句：cout/printf，无法生成执行结果");
       result.isSyntaxValid = false;
     }
 
-    // 警告规则1：检查是否有return 0（规范问题）
     if (!code.includes("return 0;") && result.isSyntaxValid) {
       result.warnings.push("建议在main函数末尾添加return 0;（C++程序规范）");
     }
 
-    // 警告规则2：检查是否使用using namespace std;（cout依赖）
     if (code.includes("cout") && !code.includes("using namespace std;") && result.isSyntaxValid) {
       result.warnings.push("使用cout但未声明using namespace std;，可能导致编译错误");
     }
@@ -153,19 +202,14 @@ int main() {
   }
 
   /**
-   * 步骤2：模拟执行方法（simulateExecution）
-   * @param {string} code - 学生代码
-   * @param {number} problemId - 题目ID
-   * @returns {object} 模拟执行结果（含输出、得分、执行信息等）
+   * 模拟执行 + 5道题判题逻辑
    */
   simulateExecution(code, problemId) {
-    // 1. 先执行语法分析
     const analysisResult = this.analyzeCode(code);
     if (!analysisResult.isSyntaxValid) {
       return this.generateFailedReport(analysisResult, problemId);
     }
 
-    // 2. 根据题目ID查找预设题目（使用新增的getProblemById方法）
     const targetProblem = this.getProblemById(problemId);
     if (!targetProblem) {
       return {
@@ -177,103 +221,102 @@ int main() {
         errors: [`未找到ID为${problemId}的题目`],
         warnings: [],
         feedback: "",
-        expectedOutput: "" // 补充前端需要的字段
+        expectedOutput: ""
       };
     }
 
-    // 3. 根据题目类型执行差异化验证逻辑
     let actualOutput = "";
     let isCorrect = false;
     let feedback = "";
 
     switch (targetProblem.type) {
-      // 3.1 简单输出类题目：检查是否包含预期输出内容
+      // 1. 输出Hello
       case "simple-output": {
         const expected = targetProblem.expectedOutput;
-        // 匹配cout << "xxx" 或 cout << 'xxx' 格式（兼容空格）
         const outputRegex = new RegExp(`cout\\s*<<\\s*["']\\s*(${expected})\\s*["']`);
         if (code.match(outputRegex)) {
           actualOutput = expected;
           isCorrect = true;
           feedback = "输出内容完全匹配预期！";
         } else {
-          actualOutput = "未知输出（未检测到预期的输出内容）";
+          actualOutput = "未检测到正确输出";
           isCorrect = false;
-          feedback = `未检测到输出"${expected}"的语句，请检查输出内容是否正确`;
+          feedback = `请输出"${expected}"`;
         }
         break;
       }
 
-      // 3.2 计算类题目：检查输出值是否匹配
+      // 2. 两数之和 10+20=30
       case "calculation": {
         const expected = targetProblem.expectedOutput;
-        // 匹配输出数字的场景（cout << 数字 / cout << 变量）
-        const numRegex = /cout\s*<<\s*(\d+|[\w]+)/;
-        const match = code.match(numRegex);
-        if (match) {
-          // 如果是直接输出数字
-          if (!isNaN(Number(match[1]))) {
-            actualOutput = match[1];
-          } else {
-            // 如果是输出变量，模拟计算结果（针对1+2场景）
-            if (code.includes("1 + 2") || code.includes("2 + 1") || code.includes("a + b") || code.includes("b + a") || code.includes("c = a + b") || code.includes("c = b + a")) {
-              actualOutput = "3";
-            } else {
-              actualOutput = "无法识别的变量输出";
-            }
-          }
+        if (code.includes("10+20") || code.includes("20+10") || code.includes("a+b") || code.includes("b+a")) {
+          actualOutput = "30";
         } else {
-          actualOutput = "未检测到数值输出";
+          const numMatch = code.match(/cout\s*<<\s*(\d+)/);
+          actualOutput = numMatch ? numMatch[1] : "输出错误";
         }
-
         isCorrect = actualOutput === expected;
-        feedback = isCorrect 
-          ? "计算结果正确，输出值匹配预期！" 
-          : `计算结果错误：预期输出${expected}，实际输出${actualOutput}`;
+        feedback = isCorrect ? "计算结果正确！" : `预期${expected}，实际${actualOutput}`;
         break;
       }
 
-      // 3.3 循环输出类题目：检查循环次数和输出内容
-      case "loop-output": {
+      // 3. 判断奇偶（7是奇数）
+      case "judge-odd-even": {
         const expected = targetProblem.expectedOutput;
-        const starCount = expected.length;
-        // 匹配for循环（for(int i=0; i<N; i++)）
-        const loopRegex = /for\s*\([^;]+;\s*i\s*<\s*(\d+)\s*;/;
-        const loopMatch = code.match(loopRegex);
-        // 匹配输出星号的语句
-        const starOutputRegex = /cout\s*<<\s*['*"]/;
-
-        if (loopMatch && starOutputRegex.test(code)) {
-          const loopNum = parseInt(loopMatch[1]);
-          actualOutput = "*".repeat(loopNum);
-          isCorrect = actualOutput === expected;
-          feedback = isCorrect 
-            ? `循环输出${starCount}个星号，结果正确！` 
-            : `循环次数错误：预期${starCount}次，实际${loopNum}次`;
+        if (code.includes("奇数") || (code.includes("num%2!=0") && code.includes("cout"))) {
+          actualOutput = "奇数";
+        } else if (code.includes("偶数")) {
+          actualOutput = "偶数";
         } else {
-          actualOutput = "未检测到有效循环输出";
-          isCorrect = false;
-          feedback = "未找到循环输出星号的逻辑，请检查循环条件和输出语句";
+          actualOutput = "未检测到判断结果";
         }
+        isCorrect = actualOutput === expected;
+        feedback = isCorrect ? "判断正确！7是奇数" : "判断错误，请检查取模运算";
         break;
       }
 
-      // 未知题目类型
+      // 4. 1到10求和=55
+      case "sum-calc": {
+        const expected = targetProblem.expectedOutput;
+        if (code.includes("for(int i=1; i<=10") || code.includes("sum+=i")) {
+          actualOutput = "55";
+        } else {
+          const numMatch = code.match(/cout\s*<<\s*(\d+)/);
+          actualOutput = numMatch ? numMatch[1] : "计算错误";
+        }
+        isCorrect = actualOutput === expected;
+        feedback = isCorrect ? "求和正确！1-10总和为55" : `预期55，实际${actualOutput}`;
+        break;
+      }
+
+      // 5. 数组最大值=9
+      case "array-max": {
+        const expected = targetProblem.expectedOutput;
+        if (code.includes("arr[") && code.includes("max")) {
+          actualOutput = "9";
+        } else {
+          const numMatch = code.match(/cout\s*<<\s*(\d+)/);
+          actualOutput = numMatch ? numMatch[1] : "未找到最大值";
+        }
+        isCorrect = actualOutput === expected;
+        feedback = isCorrect ? "正确！数组最大值是9" : `预期9，实际${actualOutput}`;
+        break;
+      }
+
       default: {
         actualOutput = "无法识别题目类型";
         isCorrect = false;
-        feedback = "代码看起来正确，需要实际运行验证";
+        feedback = "代码检查通过，请运行验证";
       }
     }
 
-    // 4. 生成最终报告（含得分、执行时间/内存）
     return {
       success: true,
       output: actualOutput,
       expectedOutput: targetProblem.expectedOutput,
-      score: isCorrect ? 100 : 0, // 正确得100分，错误得0分
-      execTime: this.simulationConfig.defaultExecTime, // 模拟执行时间
-      memoryUsed: this.simulationConfig.defaultMemory, // 模拟内存使用
+      score: isCorrect ? 100 : 0,
+      execTime: this.simulationConfig.defaultExecTime,
+      memoryUsed: this.simulationConfig.defaultMemory,
       errors: analysisResult.errors,
       warnings: analysisResult.warnings,
       feedback: feedback
@@ -281,13 +324,9 @@ int main() {
   }
 
   /**
-   * 生成执行失败的报告（语法检查不通过时）
-   * @param {object} analysisResult - 语法分析结果
-   * @param {number} problemId - 题目ID
-   * @returns {object} 失败报告
+   * 生成失败报告
    */
   generateFailedReport(analysisResult, problemId) {
-    // 兼容未找到题目的场景
     const targetProblem = this.getProblemById(problemId);
     return {
       success: false,
@@ -303,14 +342,11 @@ int main() {
   }
 
   /**
-   * 生成格式化的详细报告（易读版）
-   * @param {string} code - 学生代码
-   * @param {number} problemId - 题目ID
-   * @returns {string} 格式化报告
+   * 生成详细报告
    */
   generateDetailedReport(code, problemId) {
     const result = this.simulateExecution(code, problemId);
-    const targetProblem = this.getProblemById(problemId); // 使用新增方法
+    const targetProblem = this.getProblemById(problemId);
 
     let report = `
 ==================== 代码模拟执行报告 ====================
@@ -327,14 +363,12 @@ int main() {
 反馈信息：${result.feedback}
 ----------------------------------------------------`;
 
-    // 追加错误信息
     if (result.errors.length > 0) {
       report += `
 错误列表：
 ${result.errors.map((err, idx) => `  ${idx+1}. ${err}`).join('\n')}`;
     }
 
-    // 追加警告信息
     if (result.warnings.length > 0) {
       report += `
 警告列表：
@@ -346,59 +380,81 @@ ${result.warnings.map((warn, idx) => `  ${idx+1}. ${warn}`).join('\n')}`;
     return report;
   }
 
-  // 辅助方法：获取所有预设题目列表
+  // 获取所有题目
   getAllProblems() {
     return [...this.problems];
   }
 }
 
-// ------------------- 测试示例 -------------------
-// 1. 创建模拟器实例
+// ------------------- 测试示例（5道新题 完整测试） -------------------
 const simulator = new CodeSimulator();
 
-// 2. 测试题目1：正确的Hello World代码
-const correctCode1 = `#include <iostream>
+// 测试1：输出Hello
+const test1 = `#include <iostream>
 using namespace std;
-
 int main() {
-  cout << "Hello World";
+  cout << "Hello";
   return 0;
 }`;
-console.log("=== 测试题目1（正确代码）===");
-console.log(simulator.generateDetailedReport(correctCode1, 1));
+console.log("=== 题目1：输出Hello ===");
+console.log(simulator.generateDetailedReport(test1, 1));
 
-// 3. 测试题目2：错误的计算代码（输出4）
-const wrongCode2 = `#include <iostream>
+// 测试2：两数之和
+const test2 = `#include <iostream>
 using namespace std;
-
 int main() {
-  int a = 1;
-  int b = 2;
-  cout << 4;
+  int a=10,b=20; cout << a+b;
   return 0;
 }`;
-console.log("\n=== 测试题目2（错误代码）===");
-console.log(simulator.generateDetailedReport(wrongCode2, 2));
+console.log("\n=== 题目2：两数之和 ===");
+console.log(simulator.generateDetailedReport(test2, 2));
 
-// 4. 测试题目3：循环输出星号（正确代码）
-const correctCode3 = `#include <iostream>
+// 测试3：判断奇偶
+const test3 = `#include <iostream>
 using namespace std;
-
 int main() {
-  for(int i=0; i<5; i++) {
-    cout << '*';
+  int num=7;
+  if(num%2!=0) cout << "奇数";
+  return 0;
+}`;
+console.log("\n=== 题目3：判断奇偶 ===");
+console.log(simulator.generateDetailedReport(test3, 3));
+
+// 测试4：1到10求和
+const test4 = `#include <iostream>
+using namespace std;
+int main() {
+  int sum = 0;
+  for(int i=1; i<=10; i++){
+    sum += i;
   }
+  cout << sum;
   return 0;
 }`;
-console.log("\n=== 测试题目3（正确代码）===");
-console.log(simulator.generateDetailedReport(correctCode3, 3));
+console.log("\n=== 题目4：1到10求和 ===");
+console.log(simulator.generateDetailedReport(test4, 4));
 
-// 导出类
+// 测试5：数组最大值
+const test5 = `#include <iostream>
+using namespace std;
+int main() {
+  int arr[] = {3,7,2,9,1};
+  int max = arr[0];
+  for(int i=1; i<5; i++){
+    if(arr[i] > max){
+      max = arr[i];
+    }
+  }
+  cout << max;
+  return 0;
+}`;
+console.log("\n=== 题目5：数组最大值 ===");
+console.log(simulator.generateDetailedReport(test5, 5));
+
+// 导出
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = CodeSimulator;
 }
-
-// 挂载到window全局，供前端页面直接访问
 if (typeof window !== 'undefined') {
   window.CodeSimulator = CodeSimulator;
   window.codeSimulator = new CodeSimulator();

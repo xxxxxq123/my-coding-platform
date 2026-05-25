@@ -91,10 +91,14 @@
         <span id="star1" class="star">★</span>
         <span id="star2" class="star">★</span>
         <span id="star3" class="star">★</span>
+        <span id="star4" class="star">★</span>
+        <span id="star5" class="star">★</span>
       </div>
-      <div class="problem-status">1. 输出Hello World <span id="status1"></span></div>
-      <div class="problem-status">2. 计算1+2 <span id="status2"></span></div>
-      <div class="problem-status">3. 循环输出5个星号 <span id="status3"></span></div>
+      <div class="problem-status">1. 输出Hello <span id="status1"></span></div>
+      <div class="problem-status">2. 两数之和 <span id="status2"></span></div>
+      <div class="problem-status">3. 判断奇偶 <span id="status3"></span></div>
+      <div class="problem-status">4. 1到10求和 <span id="status4"></span></div>
+      <div class="problem-status">5. 数组最大值 <span id="status5"></span></div>
     </div>
 
     <!-- 题目卡片区域 -->
@@ -103,9 +107,11 @@
 
     <select id="problemSelector" style="display:none;">
       <option value="">📝 请选择编程题目</option>
-      <option value="1">1. 输出Hello World</option>
-      <option value="2">2. 计算1+2</option>
-      <option value="3">3. 循环输出5个星号</option>
+      <option value="1">1. 输出Hello</option>
+      <option value="2">2. 两数之和</option>
+      <option value="3">3. 判断奇偶</option>
+      <option value="4">4. 1到10求和</option>
+      <option value="5">5. 数组最大值</option>
     </select>
 
     <!-- 参考代码面板 -->
@@ -558,6 +564,7 @@ function doLogin(){
   alert(`🎉 登录成功！\n你的账号：${targetAccount}`);
 }
 
+// 修复注册后无法自动登录问题
 function doRegister(){
   const name = document.getElementById('regName').value.trim();
   const pwd = document.getElementById('regPwd').value.trim();
@@ -574,6 +581,7 @@ function doRegister(){
     account = Math.floor(10000000 + Math.random() * 90000000).toString();
   } while(users[account]);
 
+  // 保存用户基础信息
   users[account] = {
     password: pwd,
     name: name,
@@ -581,19 +589,27 @@ function doRegister(){
   };
   localStorage.setItem('users', JSON.stringify(users));
 
-  localStorage.setItem('currentUser', JSON.stringify({
+  // 写入当前登录态，实现注册自动登录
+  const currentUserInfo = {
     account: account,
     name: name,
-    classCode: classCode
-  }));
+    classCode: classCode,
+    className: ""
+  };
+  localStorage.setItem('currentUser', JSON.stringify(currentUserInfo));
 
-  localStorage.setItem('student_'+account, JSON.stringify({"1":false,"2":false,"3":false}));
+  // 初始化5题学习进度
+  localStorage.setItem('student_'+account, JSON.stringify({"1":false,"2":false,"3":false,"4":false,"5":false}));
+  
+  // 加载用户数据与界面进度
   loadUserInfoByKey('student_'+account);
   updateProgressDisplay();
 
+  // 关闭弹窗、显示退出按钮
   document.getElementById('authModal').style.display='none';
   document.getElementById('logoutButton').style.display='flex';
 
+  // 自动绑定班级
   if(classCode){
     bindStudentClassCode(classCode);
   }
@@ -619,10 +635,10 @@ function doLogout(){
 }
 
 window.updateProgressDisplay=function(){
-  const p=JSON.parse(localStorage.getItem('problemProgress')||'{"1":false,"2":false,"3":false}');
+  const p=JSON.parse(localStorage.getItem('problemProgress')||'{"1":false,"2":false,"3":false,"4":false,"5":false}');
   const ok=Object.values(p).filter(Boolean).length;
-  document.getElementById('progressFill').style.width=(ok/3*100)+'%';
-  for(let i=1;i<=3;i++){
+  document.getElementById('progressFill').style.width=(ok/5*100)+'%';
+  for(let i=1;i<=5;i++){
     document.getElementById('star'+i).classList.toggle('completed',p[i]);
     document.getElementById('status'+i).innerHTML=p[i]?'<span class="completed-tag">已完成</span>':'';
   }

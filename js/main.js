@@ -5,10 +5,13 @@ let userInfo = {
   name: '',
   className: ''
 };
+// 🔥 修复1：题目进度改为5道题
 let problemProgress = {
   1: false,
   2: false,
-  3: false
+  3: false,
+  4: false,
+  5: false
 };
 
 // ========== 🔥 公告全局变量 ==========
@@ -28,8 +31,8 @@ window.loadUserInfoByKey = function(userKey) {
   userInfo.name = currentUser.name || '';
   userInfo.className = currentUser.className || '';
   userInfo.classCode = currentUser.classCode || '';
-  // 读取该账号的专属进度
-  problemProgress = JSON.parse(localStorage.getItem(userKey) || '{"1":false,"2":false,"3":false}');
+  // 🔥 修复2：读取该账号的专属进度（默认5道题）
+  problemProgress = JSON.parse(localStorage.getItem(userKey) || '{"1":false,"2":false,"3":false,"4":false,"5":false}');
   
   // 加载公告（登录后自动加载）
   loadMyClassNotices();
@@ -204,7 +207,6 @@ async function runCode() {
     } : null
   };
 
-
   // 读取现有提交记录
   let allSubmits = JSON.parse(localStorage.getItem('students_submit') || '[]');
   // 过滤掉当前学生当前题目的旧记录（避免重复）
@@ -277,7 +279,7 @@ function renderSimulationResult(output, result, problemId) {
   output.innerHTML += simHtml;
 }
 
-// 生成下一步建议
+// 🔥 修复3：生成5道题专属下一步建议
 function getSuggestion(result, problemId) {
   if (!result.success) {
     return '先修复代码中的错误（红色标注），再重新运行哦～';
@@ -287,16 +289,19 @@ function getSuggestion(result, problemId) {
   }
   switch (problemId) {
     case 1:
-      return '检查cout输出的内容是不是"Hello World"，注意大小写和空格哦～';
+      return '检查cout输出的内容是不是"Hello"，注意大小写哦～';
     case 2:
-      return '确认计算的是1+2，并且输出的是计算结果3哦～';
+      return '确认计算的是10+20，并且输出的是结果30哦～';
     case 3:
-      return '检查循环条件是不是i<5，输出的是不是星号*哦～';
+      return '检查取模运算num%2，判断数字7的奇偶性哦～';
+    case 4:
+      return '检查for循环1-10累加，最终输出结果55哦～';
+    case 5:
+      return '遍历数组找出最大值9，正确输出即可得分～';
     default:
       return '建议仔细检查输出内容是否和预期一致～';
   }
 }
-
 
 /**
  * 保存学生提交数据到本地+云数据库
@@ -491,7 +496,7 @@ window.quitClass = function() {
   localStorage.setItem('currentUser', JSON.stringify(user));
 
   const classes = JSON.parse(localStorage.getItem('classes') || []);
-  const cls = classes.find(c => c.code === oldCode);
+  const cls = classes.find(c => code === oldCode);
   if (cls) {
     cls.students = cls.students.filter(s => s !== user.account);
     localStorage.setItem('classes', JSON.stringify(classes));
@@ -507,7 +512,7 @@ window.quitClass = function() {
 window.loadMyClassOptions = function() {
   const sel = document.getElementById('homeClassSelector');
   const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
-  const classes = JSON.parse(localStorage.getItem('classes') || []);
+  const classes = JSON.parse(localStorage.getItem('classes') || '[]');
 
   sel.innerHTML = '<option value="">-- 选择班级 --</option>';
   if (!user.classCode) return;
@@ -537,9 +542,11 @@ window.loadClassRanking = function() {
   (cls.students || []).forEach(account => {
     const u = users[account];
     if (!u) return;
-    const progress = JSON.parse(localStorage.getItem(`student_${account}`) || '{"1":false,"2":false,"3":false}');
+    // 🔥 修复4：读取5题进度
+    const progress = JSON.parse(localStorage.getItem(`student_${account}`) || '{"1":false,"2":false,"3":false,"4":false,"5":false}');
     const total = Object.values(progress).filter(v => v === true).length;
-    const rate = Math.round((total / 3) * 100);
+    // 🔥 修复5：按5题计算进度百分比
+    const rate = Math.round((total / 5) * 100);
     ranks.push({ name: u.name, account, rate, total });
   });
 
@@ -547,17 +554,16 @@ window.loadClassRanking = function() {
 
   let html = '';
   ranks.forEach((r, i) => {
+    // 🔥 显示5题完成进度
     html += `
       <div class="student-item">
-        第${i+1}名　${r.name}　完成 ${r.total}/3题　${r.rate}%
+        第${i+1}名　${r.name}　完成 ${r.total}/5题　${r.rate}%
       </div>
     `;
   });
 
   listEl.innerHTML = html || '<p class="empty-tip">暂无成员</p>';
 };
-
-
 
 // 加载当前班级的所有公告
 window.loadMyClassNotices = function() {
