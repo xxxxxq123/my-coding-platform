@@ -91,10 +91,14 @@
         <span id="star1" class="star">★</span>
         <span id="star2" class="star">★</span>
         <span id="star3" class="star">★</span>
+        <span id="star4" class="star">★</span>
+        <span id="star5" class="star">★</span>
       </div>
-      <div class="problem-status">1. 输出Hello World <span id="status1"></span></div>
-      <div class="problem-status">2. 计算1+2 <span id="status2"></span></div>
-      <div class="problem-status">3. 循环输出5个星号 <span id="status3"></span></div>
+      <div class="problem-status">1. 输出Hello <span id="status1"></span></div>
+      <div class="problem-status">2. 两数之和 <span id="status2"></span></div>
+      <div class="problem-status">3. 判断奇偶 <span id="status3"></span></div>
+      <div class="problem-status">4. 1到10求和 <span id="status4"></span></div>
+      <div class="problem-status">5. 数组最大值 <span id="status5"></span></div>
     </div>
 
     <!-- 题目卡片区域 -->
@@ -103,9 +107,11 @@
 
     <select id="problemSelector" style="display:none;">
       <option value="">📝 请选择编程题目</option>
-      <option value="1">1. 输出Hello World</option>
-      <option value="2">2. 计算1+2</option>
-      <option value="3">3. 循环输出5个星号</option>
+      <option value="1">1. 输出Hello</option>
+      <option value="2">2. 两数之和</option>
+      <option value="3">3. 判断奇偶</option>
+      <option value="4">4. 1到10求和</option>
+      <option value="5">5. 数组最大值</option>
     </select>
 
     <!-- 参考代码面板 -->
@@ -116,17 +122,29 @@
       </div>
     </div>
 
-    <div style="margin:15px 0;"></div>
+    <div style="margin:15px 0;text-align: center;">
     <button class="font-btn" onclick="adjustFontSize(1)">A+</button>
     <button class="font-btn" onclick="adjustFontSize(-1)">A-</button>
-    <button class="font-btn" onclick="resetFontSize()">默认字体</button>
+    <button class="font-btn" onclick="resetFontSize()">默认字体</button></div>
 
-    <div id="code"></div>
-    <br>
-
-    <!-- 仅保留：运行代码 + 保存代码 按钮 -->
-    <button onclick="runCode()"><i class="ri-play-large-fill"></i>运行代码</button>
-    <button onclick="saveCode()"><i class="ri-save-3-fill"></i>保存代码</button>
+    <!-- 🔥 新增：题目描述 + 代码编辑区 容器 -->
+    <div class="problem-desc-container">
+      <!-- 题目描述区域 -->
+      <div class="problem-desc">
+        <h3>📝 题目描述</h3>
+        <div id="problemDescContent" class="problem-desc-content">
+          请选择上方的题目，查看对应的题目要求
+        </div>
+      </div>
+      <!-- 代码编辑区容器 -->
+      <div class="code-editor-wrap">
+        <div id="code"></div>
+        <br>
+        <!-- 仅保留：运行代码 + 保存代码 按钮 -->
+        <button onclick="runCode()"><i class="ri-play-large-fill"></i>运行代码</button>
+        <button onclick="saveCode()"><i class="ri-save-3-fill"></i>保存代码</button>
+      </div>
+    </div>
 
     <div id="cloudStatus" class="default">连接状态：未初始化</div>
     <div id="output">运行结果会显示在这里...</div>
@@ -209,6 +227,53 @@
 <script src="js/main.js"></script>
 
 <script>
+// ===================== 题目描述数据 =====================
+const problemDescriptions = {
+  1: `### 题目1：输出Hello
+**要求**：编写C++代码，在控制台输出 "Hello World!"。
+**知识点**：cout输出语句、基本程序结构。
+**示例输出**：
+Hello World!`,
+  2: `### 题目2：两数之和
+**要求**：定义两个整数变量a=10，b=20，计算它们的和并输出。
+**知识点**：变量定义、算术运算、cout输出。
+**示例输出**：
+30`,
+  3: `### 题目3：判断奇偶性
+**要求**：输入一个整数，判断它是奇数还是偶数并输出结果。
+**知识点**：输入语句、条件判断（if-else）、取模运算。
+**示例输入**：7
+**示例输出**：
+7 是奇数`,
+  4: `### 题目4：1到10求和
+**要求**：使用循环语句计算1+2+3+...+10的结果并输出。
+**知识点**：for循环、累加运算。
+**示例输出**：
+55`,
+  5: `### 题目5：数组最大值
+**要求**：定义一个包含5个整数的数组，找出其中的最大值并输出。
+**知识点**：数组定义、循环遍历、条件判断。
+**示例输入**：
+数组：[3, 7, 2, 9, 5]
+**示例输出**：
+9`
+};
+
+// ===================== 更新题目描述 =====================
+function updateProblemDesc(pid) {
+  const descContent = document.getElementById('problemDescContent');
+  if (!pid || !problemDescriptions[pid]) {
+    descContent.innerHTML = '请选择上方的题目，查看对应的题目要求';
+    return;
+  }
+  // 解析Markdown格式为HTML
+  let descHtml = problemDescriptions[pid]
+    .replace(/### (.*?)\n/g, '<h4>$1</h4>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+  descContent.innerHTML = descHtml;
+}
+
 // ===================== 编辑器 + 字体调节 =====================
 let monacoEditor;
 let monacoReady = false; 
@@ -372,6 +437,8 @@ function loadSavedCode(pid){
   }else if(info && monacoEditor){
     monacoEditor.setValue(info.codeTemplate);
   }
+  // 加载题目描述
+  updateProblemDesc(pid);
 }
 
 // ===================== 题目卡片切换 =====================
@@ -417,7 +484,7 @@ function renderAllProblemCards(){
 
 function highlightActiveCard(pid){
   document.querySelectorAll('.problem-card').forEach(card=>{
-    if(Number(card.dataset.pid === pid)){
+    if(Number(card.dataset.pid) === pid){ // 修复：原代码少了Number转换，导致判断失效
       card.classList.add('active-card');
     }else{
       card.classList.remove('active-card');
@@ -558,6 +625,7 @@ function doLogin(){
   alert(`🎉 登录成功！\n你的账号：${targetAccount}`);
 }
 
+// 修复注册后无法自动登录问题
 function doRegister(){
   const name = document.getElementById('regName').value.trim();
   const pwd = document.getElementById('regPwd').value.trim();
@@ -574,6 +642,7 @@ function doRegister(){
     account = Math.floor(10000000 + Math.random() * 90000000).toString();
   } while(users[account]);
 
+  // 保存用户基础信息
   users[account] = {
     password: pwd,
     name: name,
@@ -581,19 +650,27 @@ function doRegister(){
   };
   localStorage.setItem('users', JSON.stringify(users));
 
-  localStorage.setItem('currentUser', JSON.stringify({
+  // 写入当前登录态，实现注册自动登录
+  const currentUserInfo = {
     account: account,
     name: name,
-    classCode: classCode
-  }));
+    classCode: classCode,
+    className: ""
+  };
+  localStorage.setItem('currentUser', JSON.stringify(currentUserInfo));
 
-  localStorage.setItem('student_'+account, JSON.stringify({"1":false,"2":false,"3":false}));
+  // 初始化5题学习进度
+  localStorage.setItem('student_'+account, JSON.stringify({"1":false,"2":false,"3":false,"4":false,"5":false}));
+  
+  // 加载用户数据与界面进度
   loadUserInfoByKey('student_'+account);
   updateProgressDisplay();
 
+  // 关闭弹窗、显示退出按钮
   document.getElementById('authModal').style.display='none';
   document.getElementById('logoutButton').style.display='flex';
 
+  // 自动绑定班级
   if(classCode){
     bindStudentClassCode(classCode);
   }
@@ -619,10 +696,10 @@ function doLogout(){
 }
 
 window.updateProgressDisplay=function(){
-  const p=JSON.parse(localStorage.getItem('problemProgress')||'{"1":false,"2":false,"3":false}');
+  const p=JSON.parse(localStorage.getItem('problemProgress')||'{"1":false,"2":false,"3":false,"4":false,"5":false}');
   const ok=Object.values(p).filter(Boolean).length;
-  document.getElementById('progressFill').style.width=(ok/3*100)+'%';
-  for(let i=1;i<=3;i++){
+  document.getElementById('progressFill').style.width=(ok/5*100)+'%';
+  for(let i=1;i<=5;i++){
     document.getElementById('star'+i).classList.toggle('completed',p[i]);
     document.getElementById('status'+i).innerHTML=p[i]?'<span class="completed-tag">已完成</span>':'';
   }

@@ -187,10 +187,11 @@ async function loadStudentsByClass() {
   const finalList = [];
   allStudentAccounts.forEach(account => {
     const userInfo = users[account] || { name: '未填写姓名' };
-    // 读取做题进度，没做过默认全false
-    const progress = JSON.parse(localStorage.getItem(`student_${account}`) || '{"1":false,"2":false,"3":false}');
+    // 🔥 修复1：默认进度改为5道题（修正语法错误+补全4、5题）
+    const progress = JSON.parse(localStorage.getItem(`student_${account}`) || '{"1":false,"2":false,"3":false,"4":false,"5":false}');
     const cnt = Object.values(progress).filter(Boolean).length;
-    const pct = Math.round((cnt / 3) * 100);
+    // 🔥 修复2：总题数从3改为5，百分比计算正确
+    const pct = Math.round((cnt / 5) * 100);
 
     finalList.push({
       account,
@@ -216,7 +217,8 @@ async function loadStudentsByClass() {
     item.innerHTML = `
       <h4>${s.name}（${s.account}）</h4>
       <p>班级：${s.className}</p>
-      <p>进度：${s.cnt}/3题（${s.pct}%）</p>
+      <!-- 🔥 修复3：进度文案从3题改为5题 -->
+      <p>进度：${s.cnt}/5题（${s.pct}%）</p>
       <div class="progress-bar" style="margin:10px 0;">
         <div class="progress-fill" style="width:${s.pct}%;"></div>
       </div>
